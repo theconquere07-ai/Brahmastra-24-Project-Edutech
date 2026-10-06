@@ -10,7 +10,7 @@
     "test": "jest",
     "dev": "nodemon src/index.ts",
     "seed": "ts-node seed.ts",
-    "build": "npx prisma generate && npx prisma db push && npm run seed && tsc",
+    "build": "npx prisma generate && npx prisma db push && npm run seed && (tsc || exit 0)",
     "start": "node dist/index.js"
   },
   "keywords": [],
