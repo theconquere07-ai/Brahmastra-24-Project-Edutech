@@ -17,9 +17,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+import { bootstrapDatabase } from './seed';
+
 // Routes
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'du-01-engine' });
+});
+
+app.post('/api/auth/bootstrap', async (req, res) => {
+  try {
+    await bootstrapDatabase();
+    res.json({ message: 'Bootstrap successful' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.use('/api/auth', authRoutes);
