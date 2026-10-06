@@ -32,9 +32,11 @@ app.use('/api/practice', practiceRoutes);
 // Error handling
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY) {
-  app.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT || '3000', 10);
+// In Render, we need the app to listen even if NODE_ENV is production.
+// We only skip listening if we are explicitly running inside Netlify functions.
+if (!process.env.NETLIFY) {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
   });
 }
