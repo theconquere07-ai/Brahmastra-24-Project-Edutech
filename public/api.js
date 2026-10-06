@@ -2,6 +2,9 @@ class ApiClient {
   constructor() {
     this.token = localStorage.getItem('lumen_token');
     this.user = JSON.parse(localStorage.getItem('lumen_user') || 'null');
+    // Change this to your Render backend URL once deployed (e.g. 'https://your-backend.onrender.com/api')
+    // Or leave it as '/api' if hosted together.
+    this.baseUrl = '/api'; 
   }
 
   setToken(token, user) {
@@ -23,7 +26,7 @@ class ApiClient {
     const config = { method, headers };
     if (body) config.body = JSON.stringify(body);
 
-    const res = await fetch(`/api${endpoint}`, config);
+    const res = await fetch(`${this.baseUrl}${endpoint}`, config);
     if (!res.ok) {
       if (res.status === 401) {
         this.setToken(null, null);
