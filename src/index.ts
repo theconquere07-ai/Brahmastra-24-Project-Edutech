@@ -47,8 +47,16 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 // In Render, we need the app to listen even if NODE_ENV is production.
 // We only skip listening if we are explicitly running inside Netlify functions.
 if (!process.env.NETLIFY) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on port ${PORT}`);
+  bootstrapDatabase().then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  }).catch(err => {
+    console.error('Failed to bootstrap database on startup:', err);
+    // Start anyway so healthchecks pass
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   });
 }
 

@@ -10,8 +10,8 @@
     "test": "jest",
     "dev": "nodemon src/index.ts",
     "seed": "node dist/seed.js",
-    "build": "npx prisma generate && tsc",
-    "start": "node dist/index.js"
+    "build": "npx prisma generate && npx prisma db push --accept-data-loss && tsc",
+    "start": "npx prisma db push --accept-data-loss && node dist/index.js"
   },
   "keywords": [],
   "author": "",
