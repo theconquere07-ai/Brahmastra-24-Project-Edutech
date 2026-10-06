@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
+<script>
+(function(){var t=localStorage.getItem('lumen_theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lumen — Learning Gap Intelligence</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
@@ -7,6 +10,9 @@
 :root{--bg:#f3efe6;--sf:#faf8f2;--tx:#1c1a16;--mu:#6e685b;--bd:#ddd6c6;--pr:#16233d;--pt:#faf8f2;--ac:#2b4c9b;--prs:#e8e3d6;--ok:#2e6a4d;--oks:#e0eadf;--wn:#9a5a0a;--wns:#f2e4c8;--er:#ad3f2a;--ers:#f3dcd3;--r:6px;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14130f;--sf:#1c1b16;--tx:#efe9dc;--mu:#a39c8b;--bd:#34312a;--pr:#ece4d0;--pt:#14130f;--ac:#8fa9ee;--prs:#2a2820;--ok:#86c6a2;--oks:#1d3027;--wn:#e8b05c;--wns:#37290f;--er:#f09a85;--ers:#3c2019}}
 :root[data-theme=dark]{--bg:#14130f;--sf:#1c1b16;--tx:#efe9dc;--mu:#a39c8b;--bd:#34312a;--pr:#ece4d0;--pt:#14130f;--ac:#8fa9ee;--prs:#2a2820;--ok:#86c6a2;--oks:#1d3027;--wn:#e8b05c;--wns:#37290f;--er:#f09a85;--ers:#3c2019}
+:root[data-theme=light]{--bg:#f3efe6;--sf:#faf8f2;--tx:#1c1a16;--mu:#6e685b;--bd:#ddd6c6;--pr:#16233d;--pt:#faf8f2;--ac:#2b4c9b;--prs:#e8e3d6;--ok:#2e6a4d;--oks:#e0eadf;--wn:#9a5a0a;--wns:#f2e4c8;--er:#ad3f2a;--ers:#f3dcd3}
+html[data-theme] body,html[data-theme] .card,html[data-theme] aside,html[data-theme] .side,html[data-theme] .seg,html[data-theme] .nav,html[data-theme] input,html[data-theme] select,html[data-theme] .opt,html[data-theme] .dot,html[data-theme] .crow,html[data-theme] .toast,html[data-theme] .btn,html[data-theme] th,html[data-theme] td,html[data-theme] .bar,html[data-theme] .ex{transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+.theme-toggle{all:unset;cursor:pointer;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:16px;border:1px solid var(--bd);background:var(--sf);transition:background .2s,border-color .2s}.theme-toggle:hover{border-color:var(--tx)}.theme-toggle:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 *{box-sizing:border-box}html,body{margin:0}html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{background:var(--bg);color:var(--tx);font:15px/1.55 'Instrument Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 h1,h2{font-family:Newsreader,Georgia,serif;font-weight:500;margin:0;letter-spacing:-.02em;line-height:1.15}h1{font-size:36px}h2{font-size:23px}h3{font-size:15.5px;font-weight:600;margin:0}
