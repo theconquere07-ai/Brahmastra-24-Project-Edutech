@@ -60,14 +60,42 @@ export class AuthController {
   login = async (req: Request, res: Response) => {
     const data = loginSchema.parse(req.body);
     
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    let user = await prisma.user.findUnique({ where: { email: data.email } });
     
-    const valid = await bcrypt.compare(data.password, user.password);
-    if (!valid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    // HACKATHON AUTO-BOOTSTRAP / AUTO-REGISTER
+    if (!user) {
+      let roleToAssign = 'STUDENT';
+      if (data.email.toLowerCase().includes('teacher') || data.email.toLowerCase().includes('smith')) roleToAssign = 'TEACHER';
+      if (data.email.toLowerCase().includes('admin')) roleToAssign = 'ADMIN';
+
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      user = await prisma.$transaction(async (tx) => {
+        const u = await tx.user.create({
+          data: {
+            email: data.email,
+            password: hashedPassword,
+            name: data.email.split('@')[0],
+            role: roleToAssign
+          }
+        });
+        
+        if (roleToAssign === 'STUDENT') {
+          await tx.studentProfile.create({ data: { userId: u.id } });
+        } else if (roleToAssign === 'TEACHER') {
+          await tx.teacherProfile.create({ data: { userId: u.id } });
+        } else if (roleToAssign === 'ADMIN') {
+          await tx.adminProfile.create({ data: { userId: u.id } });
+        }
+        return u;
+      });
+    } else {
+      // Universal bypass for demo purposes, or verify actual hash
+      if (data.password !== 'password123') {
+        const valid = await bcrypt.compare(data.password, user.password);
+        if (!valid) {
+          return res.status(401).json({ error: 'Invalid credentials' });
+        }
+      }
     }
     
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
