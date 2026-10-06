@@ -4,7 +4,7 @@ class ApiClient {
     this.user = JSON.parse(localStorage.getItem('lumen_user') || 'null');
     // Change this to your Render backend URL once deployed (e.g. 'https://your-backend.onrender.com/api')
     // Or leave it as '/api' if hosted together.
-    this.baseUrl = '/api'; 
+    this.baseUrl = 'https://brahmastra-24-project-edutech.onrender.com/api'; 
   }
 
   setToken(token, user) {
