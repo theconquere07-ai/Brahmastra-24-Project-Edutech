@@ -1,0 +1,251 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   // "STUDENT", "TEACHER", "ADMIN"
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile  StudentProfile?
+  teacherProfile  TeacherProfile?
+  adminProfile    AdminProfile?
+
+  createdAssessments Assessment[] @relation("AssessmentCreator")
+}
+
+model StudentProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  
+  classes        Class[]  @relation("StudentClasses")
+  attempts       Attempt[]
+  learningGaps   LearningGap[]
+  reassessments  Reassessment[]
+}
+
+model TeacherProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+
+  classes        Class[]  @relation("TeacherClasses")
+}
+
+model AdminProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+model Class {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+
+  students       StudentProfile[] @relation("StudentClasses")
+  teachers       TeacherProfile[] @relation("TeacherClasses")
+  assignedAssessments Assessment[] @relation("ClassAssessments")
+}
+
+model Concept {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+
+  questions      Question[]
+  learningGaps   LearningGap[]
+  
+  prerequisites  ConceptDependency[] @relation("DependentConcepts")
+  dependentOn    ConceptDependency[] @relation("ConceptPrerequisites")
+}
+
+model ConceptDependency {
+  id             String   @id @default(uuid())
+  conceptId      String
+  prerequisiteId String
+
+  concept        Concept  @relation("DependentConcepts", fields: [conceptId], references: [id])
+  prerequisite   Concept  @relation("ConceptPrerequisites", fields: [prerequisiteId], references: [id])
+
+  @@unique([conceptId, prerequisiteId])
+}
+
+model Assessment {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  subject        String?
+  topic          String?
+  difficulty     String?  // "BEGINNER", "INTERMEDIATE", "ADVANCED"
+  status         String   // "DRAFT", "PUBLISHED", "ARCHIVED"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  creatorId      String
+  creator        User     @relation("AssessmentCreator", fields: [creatorId], references: [id])
+
+  questions      AssessmentQuestion[]
+  assignedClasses Class[] @relation("ClassAssessments")
+  attempts       Attempt[]
+}
+
+model Question {
+  id             String   @id @default(uuid())
+  text           String
+  type           String   // "MCQ", "SHORT_ANSWER"
+  options        String?  // JSON string
+  correctAnswer  String
+  topic          String?
+  difficulty     String?  // "BEGINNER", "INTERMEDIATE", "ADVANCED"
+  explanation    String?
+
+  conceptId      String
+  concept        Concept  @relation(fields: [conceptId], references: [id])
+
+  assessmentQuestions AssessmentQuestion[]
+  responses      Response[]
+}
+
+model AssessmentQuestion {
+  id             String   @id @default(uuid())
+  assessmentId   String
+  questionId     String
+  order          Int      @default(0)
+
+  assessment     Assessment @relation(fields: [assessmentId], references: [id])
+  question       Question   @relation(fields: [questionId], references: [id])
+
+  @@unique([assessmentId, questionId])
+}
+
+model Attempt {
+  id             String   @id @default(uuid())
+  studentId      String
+  assessmentId   String
+  status         String   // "IN_PROGRESS", "COMPLETED"
+  score          Float?
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  student        StudentProfile @relation(fields: [studentId], references: [id])
+  assessment     Assessment     @relation(fields: [assessmentId], references: [id])
+  responses      Response[]
+}
+
+model Response {
+  id             String   @id @default(uuid())
+  attemptId      String
+  questionId     String
+  submittedAnswer String
+  isCorrect      Boolean?
+  isPartiallyCorrect Boolean? @default(false)
+  timestamp      DateTime @default(now())
+  
+  errorClassification String?
+  analysisStatus      String? // "PENDING", "COMPLETED", "FAILED"
+  misconception       String?
+
+  attempt        Attempt  @relation(fields: [attemptId], references: [id])
+  question       Question @relation(fields: [questionId], references: [id])
+  gapEvidences   GapEvidence[]
+}
+
+model LearningGap {
+  id             String   @id @default(uuid())
+  studentId      String
+  conceptId      String
+  
+  severity       String   // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+  confidence     Float    
+  status         String   // "ACTIVE", "RESOLVED"
+  
+  diagnosis      String?
+  errorPatterns  String?  // JSON
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  student        StudentProfile @relation(fields: [studentId], references: [id])
+  concept        Concept        @relation(fields: [conceptId], references: [id])
+  
+  evidences      GapEvidence[]
+  learningPaths  LearningPath[]
+  reassessments  Reassessment[]
+}
+
+model GapEvidence {
+  id             String   @id @default(uuid())
+  learningGapId  String
+  responseId     String
+  reason         String?
+
+  learningGap    LearningGap @relation(fields: [learningGapId], references: [id])
+  response       Response    @relation(fields: [responseId], references: [id])
+}
+
+model LearningPath {
+  id             String   @id @default(uuid())
+  learningGapId  String
+  status         String   // "IN_PROGRESS", "COMPLETED"
+  createdAt      DateTime @default(now())
+
+  learningGap    LearningGap @relation(fields: [learningGapId], references: [id])
+  steps          LearningPathStep[]
+}
+
+model LearningPathStep {
+  id             String   @id @default(uuid())
+  learningPathId String
+  order          Int
+  type           String   // "REVIEW", "PRACTICE", "REASSESSMENT"
+  status         String   // "LOCKED", "AVAILABLE", "IN_PROGRESS", "COMPLETED"
+  referenceId    String?  // ID of practice session or reassessment
+
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id])
+}
+
+model PracticeSession {
+  id             String   @id @default(uuid())
+  studentId      String
+  conceptId      String
+  status         String   // "IN_PROGRESS", "COMPLETED"
+  score          Float?
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+}
+
+model PracticeQuestion {
+  id             String   @id @default(uuid())
+  sessionId      String
+  text           String
+  options        String?
+  correctAnswer  String
+  explanation    String?
+  difficulty     String?
+  order          Int
+}
+
+model Reassessment {
+  id             String   @id @default(uuid())
+  studentId      String
+  learningGapId  String
+  beforeScore    Float?
+  afterScore     Float?
+  improvement    Float?
+  status         String   // "PENDING", "COMPLETED"
+  completedAt    DateTime?
+
+  student        StudentProfile @relation(fields: [studentId], references: [id])
+  learningGap    LearningGap    @relation(fields: [learningGapId], references: [id])
+}
